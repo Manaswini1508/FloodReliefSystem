@@ -1,0 +1,24 @@
+<body>
+
+<div class="container">
+    <h1>🌊 Flood Relief AI System</h1>
+
+    <input id="injured" placeholder="Injured People"><br>
+    <input id="houses" placeholder="Houses Damaged"><br>
+    <input id="water" placeholder="Water Left (%)"><br>
+    <input id="food" placeholder="Food Left (%)"><br>
+
+    <button onclick="predict()">Predict</button>
+    <button onclick="loadHistory()">History</button>
+
+    <h2 id="result"></h2>
+</div>
+
+<ul id="history"></ul>
+
+<script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="chart" width="300" height="200"></canvas>
+
+</body>
