@@ -1,9 +1,13 @@
 import sqlite3
 import os
+import warnings
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
+
+# Avoid warnings
+warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 CORS(app)
@@ -33,9 +37,12 @@ data = {
 }
 
 df = pd.DataFrame(data)
+
+# Features & Labels
 X = df[["injured", "houses_damaged", "water_left", "food_left"]]
 y = df["priority"]
 
+# Model
 model = DecisionTreeClassifier()
 model.fit(X, y)
 
@@ -58,7 +65,7 @@ def predict():
         user_input = [[inj, house, water, food]]
         result = model.predict(user_input)[0]
 
-        # SAVE DATA
+        # Save to DB
         cursor.execute(
             "INSERT INTO history VALUES (?, ?, ?, ?, ?)",
             (inj, house, water, food, result)
@@ -77,7 +84,7 @@ def history():
     data = cursor.fetchall()
     return jsonify(data)
 
-# -------- RUN (IMPORTANT FIX) --------
+# -------- RUN (FINAL FIX) --------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))   # Railway dynamic port
+    port = int(os.environ.get("PORT"))  # MUST for Railway
     app.run(host="0.0.0.0", port=port)
