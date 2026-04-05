@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS history (
     result TEXT
 )
 ''')
+conn.commit()
 
 # -------- DATA --------
 data = {
@@ -37,6 +39,11 @@ y = df["priority"]
 model = DecisionTreeClassifier()
 model.fit(X, y)
 
+# -------- HOME ROUTE --------
+@app.route("/")
+def home():
+    return "Flood Relief API Running 🚀"
+
 # -------- PREDICT --------
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -51,9 +58,11 @@ def predict():
         user_input = [[inj, house, water, food]]
         result = model.predict(user_input)[0]
 
-        # ✅ SAVE DATA
-        cursor.execute("INSERT INTO history VALUES (?, ?, ?, ?, ?)",
-                       (inj, house, water, food, result))
+        # SAVE DATA
+        cursor.execute(
+            "INSERT INTO history VALUES (?, ?, ?, ?, ?)",
+            (inj, house, water, food, result)
+        )
         conn.commit()
 
         return jsonify({"priority": result})
@@ -61,13 +70,14 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-# -------- HISTORY (THIS WAS MISSING) --------
+# -------- HISTORY --------
 @app.route('/history', methods=['GET'])
 def history():
     cursor.execute("SELECT * FROM history")
     data = cursor.fetchall()
     return jsonify(data)
 
-# -------- RUN --------
+# -------- RUN (IMPORTANT FIX) --------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8080))   # Railway dynamic port
+    app.run(host="0.0.0.0", port=port)
